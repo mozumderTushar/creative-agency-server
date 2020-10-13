@@ -21,7 +21,18 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
     const servicesCollection = client.db("creativeAgency").collection("services");
     const feedbackCollection = client.db("creativeAgency").collection("feedback");
+    const orderCollection = client.db("creativeAgency").collection("order");
     console.log('db connected');
+
+    // post order to server
+    app.post('/singleOrder', (req, res) => {
+        const event = req.body;
+        orderCollection.insertOne(event)
+            .then(result => {
+                console.log(result)
+                res.send(result)
+            })
+    })
 
     //services
     app.get('/services', (req, res) => {
@@ -38,6 +49,8 @@ client.connect(err => {
                 res.send(documents)
             })
     })
+
+
 
 });
 
