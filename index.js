@@ -34,6 +34,16 @@ client.connect(err => {
             })
     })
 
+      // client review order to server
+      app.post('/clientFeedback', (req, res) => {
+        const event = req.body;
+        feedbackCollection.insertOne(event)
+            .then(result => {
+                console.log(result)
+                res.send(result)
+            })
+    })
+
     //services
     app.get('/services', (req, res) => {
         servicesCollection.find({})
@@ -45,6 +55,14 @@ client.connect(err => {
     //client feedback
     app.get('/feedback', (req, res) => {
         feedbackCollection.find({})
+            .toArray((err, documents) => {
+                res.send(documents)
+            })
+    })
+
+    //order
+    app.get('/order', (req, res) => {
+        orderCollection.find({})
             .toArray((err, documents) => {
                 res.send(documents)
             })
