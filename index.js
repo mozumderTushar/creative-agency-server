@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const fs = require('fs-extra');
 const fileUpload = require('express-fileupload');
 const MongoClient = require('mongodb').MongoClient;
 require('dotenv').config()
@@ -53,17 +54,34 @@ client.connect(err => {
         const file = req.files.file;
         const title = req.body.title;
         const description = req.body.description;
+        const filePath = `${__dirname}/services/${file.name}`
 
-        console.log(title, description, file);
 
-        file.mv(`${__dirname}/services/${file.name}`, err => {
+        file.mv(filePath, err => {
             if(err){
                 console.log(err);
-                return res.status(500).send({msg: 'Failed to upload image'})
+                res.status(500).send({msg: 'Failed to upload image'})
             }
-            servicesCollection.insertOne({ title, description, img:file.name })
+
+            const newImg = fs.readFileSync(filePath)
+            const encImg = newImg.toString('base64')
+    
+            var image = {
+                contentType: req.files.file.mimetype,
+                size: req.files.file.size,
+                img: Buffer.from(encImg, 'base64')
+            }
+
+            servicesCollection.insertOne({ title, description, image })
             .then(result => {
-                res.send(result.insertedCount > 0)
+                fs.remove(filePath, error => {
+                    if(error){
+                        console.log(error)
+                        
+                    }
+                    res.send(result.insertedCount > 0)
+                })
+               
             })
             // return res.send({name: file.name, path:`/${file.name}`})
         })
@@ -106,6 +124,14 @@ client.connect(err => {
       //all admin
       app.get('/allAdmin', (req, res) => {
         adminCollection.find({})
+            .toArray((err, documents) => {
+                res.send(documents)
+            })
+    })
+
+     //orderList
+     app.get('/orderList', (req, res) => {
+        orderCollection.find({})
             .toArray((err, documents) => {
                 res.send(documents)
             })
