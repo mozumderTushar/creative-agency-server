@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const fileUpload = require('express-fileupload');
 const MongoClient = require('mongodb').MongoClient;
 require('dotenv').config()
 
@@ -10,6 +11,8 @@ const app = express()
 
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.static('services'));
+app.use(fileUpload());
 
 
 const port = 5000
@@ -42,6 +45,27 @@ client.connect(err => {
                 console.log(result)
                 res.send(result)
             })
+    })
+
+    //add new services
+    app.post('/addAService', (req, res) => {
+        const file = req.files.file;
+        const title = req.body.title;
+        const description = req.body.description;
+
+        console.log(title, description, file);
+
+        file.mv(`${__dirname}/services/${file.name}`, err => {
+            if(err){
+                console.log(err);
+                return res.status(500).send({msg: 'Failed to upload image'})
+            }
+            servicesCollection.insertOne({ title, description, img:file.name })
+            .then(result => {
+                res.send(result.insertedCount > 0)
+            })
+            // return res.send({name: file.name, path:`/${file.name}`})
+        })
     })
 
     //services
