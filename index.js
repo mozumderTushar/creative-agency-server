@@ -39,8 +39,8 @@ client.connect(err => {
             })
     })
 
-      // client review order to server
-      app.post('/clientFeedback', (req, res) => {
+    // client review order to server
+    app.post('/clientFeedback', (req, res) => {
         const event = req.body;
         feedbackCollection.insertOne(event)
             .then(result => {
@@ -54,41 +54,23 @@ client.connect(err => {
         const file = req.files.file;
         const title = req.body.title;
         const description = req.body.description;
-        const filePath = `${__dirname}/services/${file.name}`
+        const newImg = file.data
+        const encImg = newImg.toString('base64')
 
+        var image = {
+            contentType: file.mimetype,
+            size: file.size,
+            img: Buffer.from(encImg, 'base64')
+        }
 
-        file.mv(filePath, err => {
-            if(err){
-                console.log(err);
-                res.status(500).send({msg: 'Failed to upload image'})
-            }
-
-            const newImg = fs.readFileSync(filePath)
-            const encImg = newImg.toString('base64')
-    
-            var image = {
-                contentType: req.files.file.mimetype,
-                size: req.files.file.size,
-                img: Buffer.from(encImg, 'base64')
-            }
-
-            servicesCollection.insertOne({ title, description, image })
+        servicesCollection.insertOne({ title, description, image })
             .then(result => {
-                fs.remove(filePath, error => {
-                    if(error){
-                        console.log(error)
-                        
-                    }
-                    res.send(result.insertedCount > 0)
-                })
-               
+                res.send(result.insertedCount > 0)
             })
-            // return res.send({name: file.name, path:`/${file.name}`})
-        })
     })
 
-      // add admin to server
-      app.post('/addAdmin', (req, res) => {
+    // add admin to server
+    app.post('/addAdmin', (req, res) => {
         const event = req.body;
         adminCollection.insertOne(event)
             .then(result => {
@@ -115,22 +97,22 @@ client.connect(err => {
 
     //order
     app.get('/order', (req, res) => {
-        orderCollection.find({email: req.query.email})
+        orderCollection.find({ email: req.query.email })
             .toArray((err, documents) => {
                 res.send(documents)
             })
     })
 
-      //all admin
-      app.get('/allAdmin', (req, res) => {
+    //all admin
+    app.get('/allAdmin', (req, res) => {
         adminCollection.find({})
             .toArray((err, documents) => {
                 res.send(documents)
             })
     })
 
-     //orderList
-     app.get('/orderList', (req, res) => {
+    //orderList
+    app.get('/orderList', (req, res) => {
         orderCollection.find({})
             .toArray((err, documents) => {
                 res.send(documents)
