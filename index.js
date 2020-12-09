@@ -120,6 +120,19 @@ client.connect(err => {
     })
 
 
+    //update Status
+    app.patch('/updateStatus', (req, res) => {
+        bookingCollection.updateOne(
+            { _id: ObjectId(req.body.id) },
+            {
+                $set: { status: req.body.newStatus },
+                $currentDate: { "lastModified": true }
+            }
+        )
+            .then(result => {
+                res.send(result.modifiedCount > 0)
+            })
+    })
 
 });
 
